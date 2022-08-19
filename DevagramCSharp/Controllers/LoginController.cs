@@ -1,11 +1,11 @@
-﻿using DevagramCSharp.Controllers.Dtos;
+﻿using DevagramCSharp.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevagramCSharp.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[Controller]")]
     public class LoginController : ControllerBase
     {
 
@@ -18,26 +18,21 @@ namespace DevagramCSharp.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public IActionResult EfetuarLogin([FromBody] LoginController loginrequisicao)
+        public IActionResult EfetuarLogin([FromBody] LoginRequisicaoDto loginrequisicao)
         {
             try
             {
-                throw new ArgumentException("Erro ao preencher os dados");
+                throw new ArgumentException("Erro ao preencher os dados"); 
             }
             catch (Exception e)
             {
                 _logger.LogError("Ocorreu um erro no login: " + e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, new ErrorRespostaDto()
-                {
-                    Descricao = "Ocorreu um erro ao fazer login", 
-
-                    Status = StatusCodes.Status500InternalServerError
-                });
+                    {
+                        Descricao = "Ocorreu um erro ao realizar login", 
+                        Status = StatusCodes.Status500InternalServerError
+                    }); 
             }
         }
-
-
     }
-
 }
-

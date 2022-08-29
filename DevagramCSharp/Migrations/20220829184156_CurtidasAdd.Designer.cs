@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DevagramCSharp.Migrations
 {
     [DbContext(typeof(DevagramContext))]
-    [Migration("20220824191116_PublicacaoAdd")]
-    partial class PublicacaoAdd
+    [Migration("20220829184156_CurtidasAdd")]
+    partial class CurtidasAdd
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,6 +23,56 @@ namespace DevagramCSharp.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+
+            modelBuilder.Entity("DevagramCSharp.Models.Comentario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("IdPublicacao")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdUsuario")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdPublicacao");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.ToTable("Comentarios");
+                });
+
+            modelBuilder.Entity("DevagramCSharp.Models.Curtida", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("IdPublicacao")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdUsuario")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdPublicacao");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.ToTable("Curtidas");
+                });
 
             modelBuilder.Entity("DevagramCSharp.Models.Publicacao", b =>
                 {
@@ -100,6 +150,44 @@ namespace DevagramCSharp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Usuarios");
+                });
+
+            modelBuilder.Entity("DevagramCSharp.Models.Comentario", b =>
+                {
+                    b.HasOne("DevagramCSharp.Models.Publicacao", "Publicacao")
+                        .WithMany()
+                        .HasForeignKey("IdPublicacao")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DevagramCSharp.Models.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Publicacao");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("DevagramCSharp.Models.Curtida", b =>
+                {
+                    b.HasOne("DevagramCSharp.Models.Publicacao", "Publicacao")
+                        .WithMany()
+                        .HasForeignKey("IdPublicacao")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DevagramCSharp.Models.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Publicacao");
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("DevagramCSharp.Models.Publicacao", b =>

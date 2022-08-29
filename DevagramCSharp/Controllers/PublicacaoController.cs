@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DevagramCSharp.Controllers
 {
     [ApiController]
-    [Route("api/controller")]
+    [Route("api/[controller]")]
     public class PublicacaoController : BaseController
     {
         private readonly ILogger<PublicacaoController> _logger;
@@ -29,7 +29,8 @@ namespace DevagramCSharp.Controllers
                 CosmicService cosmicservice = new CosmicService();
                 if (publicacaodto != null)
                 {
-                    if(String.IsNullOrEmpty(publicacaodto.Descricao) && String.IsNullOrWhiteSpace(publicacaodto.Descricao))
+                    if(String.IsNullOrEmpty(publicacaodto.Descricao) && 
+                        String.IsNullOrWhiteSpace(publicacaodto.Descricao))
                     {
                         _logger.LogError("A descrição está inválida");
                         return BadRequest("É obrigatório a descrição na publicação");

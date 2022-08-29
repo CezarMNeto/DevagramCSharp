@@ -4,49 +4,49 @@
 
 namespace DevagramCSharp.Migrations
 {
-    public partial class TabelaSeguidores : Migration
+    public partial class CurtidasAdd : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Seguidores",
+                name: "Curtidas",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdUsuarioSeguidor = table.Column<int>(type: "int", nullable: true),
-                    IdUsuarioSeguido = table.Column<int>(type: "int", nullable: true)
+                    IdUsuario = table.Column<int>(type: "int", nullable: false),
+                    IdPublicacao = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Seguidores", x => x.Id);
+                    table.PrimaryKey("PK_Curtidas", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Seguidores_Usuarios_IdUsuarioSeguido",
-                        column: x => x.IdUsuarioSeguido,
-                        principalTable: "Usuarios",
+                        name: "FK_Curtidas_Publicacoes_IdPublicacao",
+                        column: x => x.IdPublicacao,
+                        principalTable: "Publicacoes",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Seguidores_Usuarios_IdUsuarioSeguidor",
-                        column: x => x.IdUsuarioSeguidor,
+                        name: "FK_Curtidas_Usuarios_IdUsuario",
+                        column: x => x.IdUsuario,
                         principalTable: "Usuarios",
                         principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Seguidores_IdUsuarioSeguido",
-                table: "Seguidores",
-                column: "IdUsuarioSeguido");
+                name: "IX_Curtidas_IdPublicacao",
+                table: "Curtidas",
+                column: "IdPublicacao");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Seguidores_IdUsuarioSeguidor",
-                table: "Seguidores",
-                column: "IdUsuarioSeguidor");
+                name: "IX_Curtidas_IdUsuario",
+                table: "Curtidas",
+                column: "IdUsuario");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Seguidores");
+                name: "Curtidas");
         }
     }
 }

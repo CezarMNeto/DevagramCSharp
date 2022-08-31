@@ -9,12 +9,18 @@ namespace DevagramCSharp.Repository.Impl
 
         public UsuarioRepositoryImpl (DevagramContext context)
         {
-            _context = context;        }
+            _context = context;       
+        }
 
         public void AtualizarUsuario(Usuario usuario)
         {
             _context.Update(usuario);
             _context.SaveChanges();
+        }
+
+        public List<Usuario> GetUsuarioNome(string nome)
+        {
+            return _context.Usuarios.Where(u => u.Nome.Contains(nome)).ToList();
         }
 
         public Usuario GetUsuarioPorId(int id)

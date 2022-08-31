@@ -8,17 +8,22 @@ using Microsoft.AspNetCore.Mvc;
 namespace DevagramCSharp.Controllers
 {
     [ApiController]
-    [Route("Api/[Controller]")]
+    [Route("api/[controller]")]
     public class UsuarioController : BaseController
     {
 
-        public readonly ILogger<UsuarioController> _logger;
-               
-        public UsuarioController(ILogger<UsuarioController> logger, IUsuarioRepository usuarioRepository) : base(usuarioRepository)
+        private readonly ILogger<UsuarioController> _logger;
+        private readonly IPublicacaoRepository _publicacaoRepository;
+        private readonly ISeguidorRepository _seguidorRepository;
+
+        public UsuarioController(ILogger<UsuarioController> logger,
+            IUsuarioRepository usuarioRepository, IPublicacaoRepository publicacaoRepository,
+            ISeguidorRepository seguidorRepository) : base(usuarioRepository)
         {
             _logger = logger;
+            _publicacaoRepository = publicacaoRepository;
+            _seguidorRepository = seguidorRepository;
         }
-
 
 
         [HttpGet]
@@ -26,6 +31,7 @@ namespace DevagramCSharp.Controllers
         {
             try
             {
+
                 Usuario usuario = LerToken();
 
                 return Ok(new UsuarioRespostaDto
@@ -37,14 +43,13 @@ namespace DevagramCSharp.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError("Ocorreu um erro ao obter usuario");
+                _logger.LogError("Ocorreu um erro ao obter o usuário");
                 return StatusCode(StatusCodes.Status500InternalServerError, new ErrorRespostaDto()
                 {
                     Descricao = "Ocorreu o seguinte erro: " + e.Message,
                     Status = StatusCodes.Status500InternalServerError
                 });
             }
-
         }
 
         [HttpPut]
@@ -78,16 +83,16 @@ namespace DevagramCSharp.Controllers
                         usuario.FotoPerfil = cosmicservice.EnviarImagem(new ImagemDto { Imagem = usuariodto.FotoPerfil, Nome = usuariodto.Nome.Replace(" ", "") });
                         usuario.Nome = usuariodto.Nome;
 
-                        _usuarioRepository.AtualizarUsuario(usuario); 
+                        _usuarioRepository.AtualizarUsuario(usuario);
                     }
-                }          
+                }
 
                 return Ok("Usuário foi salvo com sucesso");
 
             }
             catch (Exception e)
             {
-                _logger.LogError("Ocorreu um erro ao salvar usuario");
+                _logger.LogError("Ocorreu um erro ao salvar o usuário");
                 return StatusCode(StatusCodes.Status500InternalServerError, new ErrorRespostaDto()
                 {
                     Descricao = "Ocorreu o seguinte erro: " + e.Message,
@@ -95,8 +100,6 @@ namespace DevagramCSharp.Controllers
                 });
             }
         }
-            
-
 
         [HttpPost]
         [AllowAnonymous]
@@ -105,11 +108,11 @@ namespace DevagramCSharp.Controllers
             try
             {
 
-                if(usuariodto != null)
+                if (usuariodto != null)
                 {
                     var erros = new List<string>();
 
-                    if(string.IsNullOrEmpty(usuariodto.Nome) || string.IsNullOrWhiteSpace(usuariodto.Nome))
+                    if (string.IsNullOrEmpty(usuariodto.Nome) || string.IsNullOrWhiteSpace(usuariodto.Nome))
                     {
                         erros.Add("Nome inválido");
                     }
@@ -122,7 +125,7 @@ namespace DevagramCSharp.Controllers
                         erros.Add("Senha inválido");
                     }
 
-                    if(erros.Count > 0)
+                    if (erros.Count > 0)
                     {
                         return BadRequest(new ErrorRespostaDto()
                         {
@@ -138,7 +141,7 @@ namespace DevagramCSharp.Controllers
                         Email = usuariodto.Email,
                         Senha = usuariodto.Senha,
                         Nome = usuariodto.Nome,
-                        FotoPerfil = cosmicservice.EnviarImagem(new ImagemDto { Imagem = usuariodto.FotoPerfil, Nome = usuariodto.Nome.Replace(" ","") })
+                        FotoPerfil = cosmicservice.EnviarImagem(new ImagemDto { Imagem = usuariodto.FotoPerfil, Nome = usuariodto.Nome.Replace(" ", "") })
                     };
 
 
@@ -155,17 +158,17 @@ namespace DevagramCSharp.Controllers
                         return BadRequest(new ErrorRespostaDto()
                         {
                             Status = StatusCodes.Status400BadRequest,
-                            Descricao = "Usuário já esta cadastrado!"
+                            Descricao = "Usuário já está cadastrado!"
                         });
                     }
-                                    
+
                 }
 
                 return Ok("Usuário foi salvo com sucesso");
             }
             catch (Exception e)
             {
-                _logger.LogError("Ocorreu um erro ao salvar usuario");
+                _logger.LogError("Ocorreu um erro ao salvar o usuário");
                 return StatusCode(StatusCodes.Status500InternalServerError, new ErrorRespostaDto()
                 {
                     Descricao = "Ocorreu o seguinte erro: " + e.Message,
@@ -173,5 +176,87 @@ namespace DevagramCSharp.Controllers
                 });
             }
         }
+
+        [HttpGet]
+        [Route("pesquisaid")]
+        public IActionResult PesquisasUsuarioID(int idUsuario)
+        {
+            try
+            {
+
+                Usuario usuario = _usuarioRepository.GetUsuarioPorId(idUsuario);
+                int qtdepublicacoes = _publicacaoRepository.GetQtdePublicacoes(idUsuario);
+                int qtdeseguidores = _seguidorRepository.GetQtdeSeguidores(idUsuario);
+                int qtdeseguindo = _seguidorRepository.GetQtdeSeguindo(idUsuario);
+
+                return Ok(new UsuarioRespostaDto
+                {
+                    Nome = usuario.Nome,
+                    Email = usuario.Email,
+                    Avatar = usuario.FotoPerfil,
+                    IdUsuario = usuario.Id,
+                    QtdePublicacoes = qtdepublicacoes,
+                    QtdeSeguidores = qtdeseguidores,
+                    QtdeSeguindo = qtdeseguindo
+                });
+
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Ocorreu um erro ao pesquisar o usuário");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorRespostaDto()
+                {
+                    Descricao = "Ocorreu o seguinte erro ao pesquisar o usuário: " + e.Message,
+                    Status = StatusCodes.Status500InternalServerError
+                });
+            }
+        }
+
+        [HttpGet]
+        [Route("pesquisanome")]
+        public IActionResult PesquisasUsuarioNome(string nome)
+        {
+            try
+            {
+
+                List<Usuario> usuarios = _usuarioRepository.GetUsuarioNome(nome);
+
+                List<UsuarioRespostaDto> usuariosresposta = new List<UsuarioRespostaDto>();
+
+                foreach (Usuario usuario in usuarios)
+                {
+                    int qtdepublicacoes = _publicacaoRepository.GetQtdePublicacoes(usuario.Id);
+                    int qtdeseguidores = _seguidorRepository.GetQtdeSeguidores(usuario.Id);
+                    int qtdeseguindo = _seguidorRepository.GetQtdeSeguindo(usuario.Id);
+
+                    usuariosresposta.Add(new UsuarioRespostaDto
+                    {
+                        Nome = usuario.Nome,
+                        Email = usuario.Email,
+                        Avatar = usuario.FotoPerfil,
+                        IdUsuario = usuario.Id,
+                        QtdePublicacoes = qtdepublicacoes,
+                        QtdeSeguidores = qtdeseguidores,
+                        QtdeSeguindo = qtdeseguindo
+                    });
+
+                }
+
+                return Ok(usuariosresposta);
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Ocorreu um erro ao pesquisar o usuário");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorRespostaDto()
+                {
+                    Descricao = "Ocorreu o seguinte erro ao pesquisar o usuário: " + e.Message,
+                    Status = StatusCodes.Status500InternalServerError
+                });
+            }
+        }
+
     }
+
 }

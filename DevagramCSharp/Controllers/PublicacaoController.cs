@@ -25,7 +25,7 @@ namespace DevagramCSharp.Controllers
             _curtidaRepository = curtidaRepository;
         }
 
-       
+
         [HttpPost]
         public IActionResult Publicar([FromForm] PublicacaoRequisicaoDto publicacaodto)
         {
@@ -35,13 +35,13 @@ namespace DevagramCSharp.Controllers
                 CosmicService cosmicservice = new CosmicService();
                 if (publicacaodto != null)
                 {
-                    if(String.IsNullOrEmpty(publicacaodto.Descricao) && 
+                    if (String.IsNullOrEmpty(publicacaodto.Descricao) &&
                         String.IsNullOrWhiteSpace(publicacaodto.Descricao))
                     {
                         _logger.LogError("A descrição está inválida");
                         return BadRequest("É obrigatório a descrição na publicação");
                     }
-                    if(publicacaodto.Foto == null)
+                    if (publicacaodto.Foto == null)
                     {
                         _logger.LogError("A foto está inválida");
                         return BadRequest("É obrigatório a foto na publicação");
@@ -58,7 +58,7 @@ namespace DevagramCSharp.Controllers
 
                 return Ok("Publicação salva com sucesso!");
 
-            }        
+            }
             catch (Exception e)
             {
                 _logger.LogError("Ocorreu um erro na publicação: " + e.Message);
@@ -78,7 +78,7 @@ namespace DevagramCSharp.Controllers
             try
             {
                 List<PublicacaoFeedRespostaDto> feed = _publicacaoRepository.GetPublicacoesFeed(LerToken().Id);
-                
+
                 foreach (PublicacaoFeedRespostaDto feedResposta in feed)
                 {
                     Usuario usuario = _usuarioRepository.GetUsuarioPorId(feedResposta.IdUsuario);
@@ -87,7 +87,7 @@ namespace DevagramCSharp.Controllers
                         Nome = usuario.Nome,
                         Avatar = usuario.FotoPerfil,
                         IdUsuario = usuario.Id
-                    }; 
+                    };
                     feedResposta.Usuario = usuarioRespostaDto;
 
                     List<Comentario> comentarios = _comentarioRepository.GetComentarioPorPublicacao(feedResposta.IdPublicacao);
@@ -96,10 +96,10 @@ namespace DevagramCSharp.Controllers
                     List<Curtida> curtidas = _curtidaRepository.GetCurtidaPorPublicacao(feedResposta.IdPublicacao);
                     feedResposta.Curtidas = curtidas;
                 }
-                
-                return Ok();
+
+                return Ok(feed);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError("Ocorreu um erro ao carregar o Feed da Home: " + e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, new ErrorRespostaDto()
@@ -109,5 +109,45 @@ namespace DevagramCSharp.Controllers
                 });
             }
         }
+
+        [HttpGet]
+        [Route("feedusuario")]
+        public IActionResult FeedUsuario(int idUsuario)
+        {
+            try
+            {
+                List<PublicacaoFeedRespostaDto> feed = _publicacaoRepository.GetPublicacoesFeedUsuario(idUsuario);
+
+                foreach (PublicacaoFeedRespostaDto feedResposta in feed)
+                {
+                    Usuario usuario = _usuarioRepository.GetUsuarioPorId(feedResposta.IdUsuario);
+                    UsuarioRespostaDto usuarioRespostaDto = new UsuarioRespostaDto()
+                    {
+                        Nome = usuario.Nome,
+                        Avatar = usuario.FotoPerfil,
+                        IdUsuario = usuario.Id
+                    };
+                    feedResposta.Usuario = usuarioRespostaDto;
+
+                    List<Comentario> comentarios = _comentarioRepository.GetComentarioPorPublicacao(feedResposta.IdPublicacao);
+                    feedResposta.Comentarios = comentarios;
+
+                    List<Curtida> curtidas = _curtidaRepository.GetCurtidaPorPublicacao(feedResposta.IdPublicacao);
+                    feedResposta.Curtidas = curtidas;
+                }
+
+                return Ok(feed);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Ocorreu um erro ao carregar o Feed do Usuario: " + e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorRespostaDto()
+                {
+                    Descricao = "Ocorreu um ao carregar o Feed do Usuario",
+                    Status = StatusCodes.Status500InternalServerError
+                });
+            }
+        }
     }
 }
+
